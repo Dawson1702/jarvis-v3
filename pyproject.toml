@@ -31,11 +31,22 @@ jarvis = "jarvis.cli:main"
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["jarvis"]
+packages = ["jarvis", "services"]
 
 [tool.uv]
 prerelease = "allow"
 
+[tool.pytest.ini_options]
+markers = [
+    "slow: real end-to-end test that loads the actual Parakeet model (no mock)",
+]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+]
