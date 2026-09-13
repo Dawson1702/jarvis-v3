@@ -15,7 +15,7 @@ The tmux approach means it works with any CLI tool, not just Claude Code.
 | Component | Model | Purpose |
 |-----------|-------|---------|
 | STT | Parakeet TDT 0.6B (MLX) | Speech-to-text, no hallucinations on silence |
-| TTS | Kokoro 82M (MLX) | Text-to-speech, bilingual en/it |
+| TTS | Kokoro 82M (MLX) | Text-to-speech, voice and language set in `config.yaml` |
 | VAD | Silero (ONNX) | Generic voice activity detection |
 | pVAD | FireRedChat (ONNX) | Speaker-verified VAD, filters for your voice |
 | EOU | SmartTurn v3 (ONNX) | ML-based end-of-utterance prediction |
@@ -56,7 +56,7 @@ v3 took the **architecture** from offline-voice-ai and the **components** from j
 | VAD | `vad.py` | SileroVAD, PersonalizedVAD, EndOfUtteranceDetector |
 | Audio buffer | `audio_buffer.py` | Pre-buffer + active segment capture |
 | Transcriber | `transcriber.py` | Parakeet TDT wrapper |
-| Speaker | `speaker.py` | Kokoro TTS, bilingual, resampling |
+| Speaker | `speaker.py` | Kokoro TTS, voice from config, acknowledgments, resampling |
 | Polisher | `polisher.py` | Hybrid regex + Qwen 1.5B transcript cleanup |
 
 ## Setup
@@ -74,13 +74,19 @@ Download ONNX models (not included in repo):
 - `models/smart_turn_v3.onnx` — [SmartTurn](https://github.com/shubhdotai/offline-voice-ai)
 - `models/pvad/pvad.onnx` — FireRedChat personalized VAD (optional)
 
-Configure `config.yaml` with your audio devices:
+Configure `config.yaml` with your audio devices and TTS voice:
 
 ```yaml
+tts:
+  voice: "ff_siwis"   # Kokoro voice
+  lang_code: "f"      # Kokoro language: f = French, a = American English
+
 listener:
-  input_device: "MacBook Air Microphone"
-  output_device: "AirPods"
+  input_device: "Micro MacBook Pro"
+  output_device: "Haut-parleurs MacBook Pro"
 ```
+
+The acknowledgment phrases played while Claude works are in French (`_ACK_PHRASES` in `speaker.py`); change them if you switch to another language.
 
 Set up a tmux session for Claude Code:
 
@@ -94,7 +100,7 @@ claude  # start Claude Code in this pane
 ```bash
 jarvis start          # start listening
 jarvis status         # check model status
-jarvis say "hello"    # test TTS
+jarvis say "bonjour"  # test TTS
 ```
 
 ## Known limitations

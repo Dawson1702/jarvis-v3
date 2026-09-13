@@ -93,7 +93,7 @@ def main():
 
     say_p = sub.add_parser("say", help="Text-to-speech")
     say_p.add_argument("text", nargs="?", default=None, help="Text (or pipe stdin)")
-    say_p.add_argument("--lang", default="en", help="Language (en, it)")
+    say_p.add_argument("--lang", default="en", help="Voice override from tts.voices in config.yaml (otherwise tts.voice)")
 
     web_p = sub.add_parser("web", help="Start web server (browser AEC)")
     web_p.add_argument("--target", default=None, help="tmux target pane")

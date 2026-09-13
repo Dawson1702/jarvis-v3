@@ -1,7 +1,7 @@
 """TTS using mlx-audio Kokoro — pure MLX, no PyTorch GPU contention.
 
 Singleton model with explicit preload. Resamples to device native rate.
-Bilingual: English + Italian.
+Voice from config.yaml (tts.voice / tts.lang_code), per-language overrides under tts.voices.
 """
 
 import logging
@@ -41,14 +41,14 @@ _TTS_SANITIZE = [
 ]
 
 _ACK_PHRASES = [
-    "Okay.",
-    "Right.",
-    "Got it.",
-    "Let me check.",
-    "One moment.",
-    "Let me think.",
-    "Sure.",
-    "On it.",
+    "D'accord.",
+    "Très bien.",
+    "Compris.",
+    "Je vérifie.",
+    "Un instant.",
+    "Je réfléchis.",
+    "Bien sûr.",
+    "Je m'en occupe.",
 ]
 
 
@@ -75,10 +75,10 @@ def _get_model(model_name: str | None = None):
 
 def preload(model_name: str | None = None):
     """Pre-load model and warm up pipeline (avoids first-call latency)."""
-    from jarvis.config import TTS_VOICE
+    from jarvis.config import TTS_LANG_CODE, TTS_VOICE
 
     model = _get_model(model_name)
-    for _ in model.generate(".", voice=TTS_VOICE, speed=1.0, lang_code="a"):
+    for _ in model.generate(".", voice=TTS_VOICE, speed=1.0, lang_code=TTS_LANG_CODE):
         pass
     logger.info("TTS pipeline warmed up")
 
@@ -117,27 +117,26 @@ def get_sample_rate() -> int:
 
 def render(
     text: str,
-    voice: str = "af_heart",
-    lang_code: str = "a",
+    voice: str | None = None,
+    lang_code: str | None = None,
     speed: float | None = None,
     lang: str | None = None,
 ) -> np.ndarray | None:
-    """Render text to PCM float32 audio. Returns None on failure."""
+    """Render text to PCM float32 audio. Returns None on failure.
+
+    voice / lang_code not given come from config.yaml (see resolve_voice).
+    """
     import mlx.core as mx
-    from jarvis.config import TTS_SPEED, get_config
+    from jarvis.config import TTS_SPEED, get_config, resolve_voice
 
     if speed is None:
         speed = TTS_SPEED
 
     model = _get_model()
 
-    # Bilingual voice selection
-    if lang is not None:
-        config = get_config()
-        voices_cfg = config.get("tts", {}).get("voices", {})
-        if lang in voices_cfg:
-            voice = voices_cfg[lang].get("voice", voice)
-            lang_code = voices_cfg[lang].get("lang_code", lang_code)
+    cfg_voice, cfg_lang_code = resolve_voice(get_config().get("tts", {}), lang)
+    voice = voice or cfg_voice
+    lang_code = lang_code or cfg_lang_code
 
     segments = []
     for result in model.generate(text, voice=voice, speed=speed, lang_code=lang_code):

@@ -7,17 +7,10 @@ stt:
 
 tts:
   model: "mlx-community/Kokoro-82M-bf16"
-  voice: "af_heart"
-  lang_code: "a"
+  voice: "ff_siwis"
+  lang_code: "f"
   speed: 1.0
   sample_rate: 24000
-  voices:
-    en:
-      voice: "af_heart"
-      lang_code: "a"
-    it:
-      voice: "if_sara"
-      lang_code: "i"
 
 pvad:
   activation_threshold: 0.85
@@ -26,8 +19,8 @@ pvad:
   min_silence_frames: 20
 
 listener:
-  input_device: "MacBook Air Microphone"
-  output_device: "AirPods"
+  input_device: "Micro MacBook Pro"
+  output_device: "Haut-parleurs MacBook Pro"
   polish_enabled: true
   polish_model: "mlx-community/Qwen2.5-1.5B-Instruct-4bit"
   chunk_ms: 30

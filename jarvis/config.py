@@ -18,6 +18,18 @@ def get_config() -> dict:
     return _config
 
 
+def resolve_voice(tts: dict, lang: str | None = None) -> tuple[str, str]:
+    """Kokoro (voice, lang_code) from the tts config section.
+
+    tts.voice / tts.lang_code are the default; an entry under tts.voices
+    for `lang` overrides them.
+    """
+    override = (tts.get("voices") or {}).get(lang, {}) if lang else {}
+    voice = override.get("voice", tts.get("voice", "af_heart"))
+    lang_code = override.get("lang_code", tts.get("lang_code", "a"))
+    return voice, lang_code
+
+
 # Audio
 SAMPLE_RATE = 16000
 CHANNELS = 1
@@ -54,7 +66,7 @@ STT_MODEL = "mlx-community/parakeet-tdt-0.6b-v3"
 
 # TTS
 TTS_MODEL = "mlx-community/Kokoro-82M-bf16"
-TTS_VOICE = "af_heart"
+TTS_VOICE, TTS_LANG_CODE = resolve_voice(get_config().get("tts", {}))
 TTS_SPEED = float(get_config().get("tts", {}).get("speed", 1.2))
 TTS_SAMPLE_RATE = 24000
 
